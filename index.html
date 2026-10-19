@@ -20,12 +20,32 @@
         <label>Objects <input id="count" type="range" min="25" max="1000" step="25" value="250"><output id="countValue">250</output></label>
         <label>Alpha <input id="alpha" type="range" min="0" max="1" step="0.01" value="0.75"><output id="alphaValue">0.75</output></label>
         <label>Fade duration <input id="fadeDuration" type="range" min="0.2" max="5" step="0.1" value="1.5"><output id="fadeValue">1.5s</output></label>
+        <label>Lifetime range <input id="lifetimeMin" type="range" min="2" max="20" step="1" value="8"><output id="lifetimeMinValue">8s</output></label>
+        <label>Lifetime maximum <input id="lifetimeMax" type="range" min="4" max="30" step="1" value="18"><output id="lifetimeMaxValue">18s</output></label>
         <label id="curlControl">Curl multiplier <input id="curlStrength" type="range" min="0" max="2" step="0.05" value="0.5"><output id="curlValue">0.50</output></label>
         <label id="growthControl">Growth rate <input id="growthRate" type="range" min="0" max="1" step="0.01" value="0.15"><output id="growthValue">0.15</output></label>
         <label>Time step <input id="dt" type="range" min="0.001" max="0.05" step="0.001" value="0.01"><output id="dtValue">0.010</output></label>
+        <label>Color encoding<select id="colorMode">
+          <option value="fixed">Fixed blue</option>
+          <option value="velocity">Velocity magnitude</option>
+          <option value="curl">Curl magnitude</option>
+          <option value="divergence">Divergence</option>
+        </select></label>
+        <label>Color scale <input id="colorScale" type="range" min="0.5" max="3" step="0.05" value="1"><output id="colorScaleValue">1.00</output></label>
+        <label>Band hysteresis <input id="hysteresis" type="range" min="0" max="0.5" step="0.01" value="0.05"><output id="hysteresisValue">0.05</output></label>
+        <label>Integrator<select id="integrator"><option value="rk4">RK4</option><option value="euler">Euler</option></select></label>
+        <label>Boundary<select id="boundary"><option value="fade">Fade out</option><option value="wrap">Wrap around</option><option value="reflect">Reflect</option><option value="respawn">Immediate respawn</option></select></label>
+        <label class="check"><input id="deform" type="checkbox"> Deform boxes with field</label>
+        <label>Seed <input id="seed" type="number" step="1" value="12345"></label>
         <label class="check"><input id="vectors" type="checkbox"> Show field vectors</label>
+        <label class="check"><input id="paths" type="checkbox"> Show streamline history</label>
+        <div class="camera-buttons"><button data-camera="top">Top</button><button data-camera="front">Front</button><button data-camera="side">Side</button><button data-camera="iso">Iso</button></div>
+        <button id="share">Copy share link</button>
+        <section id="fieldInfo"></section>
+        <section id="diagnostics">Move the pointer over the scene for local values.</section>
         <div class="buttons"><button id="pause">Pause</button><button id="reset">Reset</button></div>
         <p class="help">Drag to orbit · Shift-drag to pan · Scroll to zoom</p>
+        <p class="attribution">Inspired by <a href="https://anvaka.github.io/fieldplay/" target="_blank" rel="noreferrer">FieldPlay</a>.<br>With thanks to Dr. Arlo Caine for discussions about related simulations.</p>
       </aside>
       <div id="scene"></div>
     </main>

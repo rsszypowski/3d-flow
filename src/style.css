@@ -10,4 +10,7 @@ label { display: block; margin: 14px 0; font-size: .82rem; color: #b7c9dd; }
 select, input { width: 100%; margin-top: 6px; accent-color: #65c9ff; } select { padding: 7px; color: inherit; background: #12263d; border: 1px solid #34516f; border-radius: 6px; }
 output { float: right; color: #eaf2ff; font-variant-numeric: tabular-nums; }
 .buttons { display: flex; gap: 8px; margin-top: 18px; } button { flex: 1; padding: 8px; color: #eaf2ff; background: #173653; border: 1px solid #3b658c; border-radius: 6px; cursor: pointer; } button:hover { background: #225078; }
+.camera-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 12px; } .camera-buttons button { padding: 6px 2px; font-size: .72rem; } #share { width: 100%; margin-top: 8px; } #fieldInfo, #diagnostics { margin-top: 14px; padding-top: 10px; border-top: 1px solid #28415e; color: #9bb1c9; font-size: .72rem; line-height: 1.45; } #fieldInfo strong { color: #eaf2ff; } #fieldInfo code { color: #7ed7ff; }
 .help { margin: 18px 0 0; color: #7892ae; font-size: .72rem; line-height: 1.4; }
+.attribution { margin: 14px 0 0; padding-top: 10px; border-top: 1px solid #28415e; color: #7189a4; font-size: .68rem; line-height: 1.45; }
+.attribution a { color: #8edbff; }
