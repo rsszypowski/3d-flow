@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Flow</title>
+  </head>
+  <body>
+    <main id="app">
+      <aside class="panel">
+        <h1>3D Flow</h1>
+        <p class="subtitle">Vector fields, vorticity, and divergence</p>
+
+        <label>Field<select id="field"></select></label>
+        <label>Mode<select id="mode">
+          <option value="particles">Particles</option>
+          <option value="curl">Curl / orientation</option>
+          <option value="divergence">Divergence / growth</option>
+        </select></label>
+        <label>Objects <input id="count" type="range" min="25" max="1000" step="25" value="250"><output id="countValue">250</output></label>
+        <label>Alpha <input id="alpha" type="range" min="0" max="1" step="0.01" value="0.75"><output id="alphaValue">0.75</output></label>
+        <label>Fade duration <input id="fadeDuration" type="range" min="0.2" max="5" step="0.1" value="1.5"><output id="fadeValue">1.5s</output></label>
+        <label id="curlControl">Curl multiplier <input id="curlStrength" type="range" min="0" max="2" step="0.05" value="0.5"><output id="curlValue">0.50</output></label>
+        <label id="growthControl">Growth rate <input id="growthRate" type="range" min="0" max="1" step="0.01" value="0.15"><output id="growthValue">0.15</output></label>
+        <label>Time step <input id="dt" type="range" min="0.001" max="0.05" step="0.001" value="0.01"><output id="dtValue">0.010</output></label>
+        <label class="check"><input id="vectors" type="checkbox"> Show field vectors</label>
+        <div class="buttons"><button id="pause">Pause</button><button id="reset">Reset</button></div>
+        <p class="help">Drag to orbit · Shift-drag to pan · Scroll to zoom</p>
+      </aside>
+      <div id="scene"></div>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
