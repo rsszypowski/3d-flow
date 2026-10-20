@@ -22,8 +22,8 @@
         <label>Fade duration <input id="fadeDuration" type="range" min="0.2" max="5" step="0.1" value="1.5"><output id="fadeValue">1.5s</output></label>
         <label>Lifetime range <input id="lifetimeMin" type="range" min="2" max="20" step="1" value="8"><output id="lifetimeMinValue">8s</output></label>
         <label>Lifetime maximum <input id="lifetimeMax" type="range" min="4" max="30" step="1" value="18"><output id="lifetimeMaxValue">18s</output></label>
-        <label id="curlControl">Curl multiplier <input id="curlStrength" type="range" min="0" max="2" step="0.05" value="0.5"><output id="curlValue">0.50</output></label>
-        <label id="growthControl">Growth rate <input id="growthRate" type="range" min="0" max="1" step="0.01" value="0.15"><output id="growthValue">0.15</output></label>
+        <label id="curlControl">Curl multiplier <input id="curlStrength" type="range" min="0" max="2" step="0.05" value="0.5"><output id="curlValue">0.50</output><span class="control-help">Higher values exaggerate rotation from curl.</span></label>
+        <label id="growthControl">Growth rate <input id="growthRate" type="range" min="0" max="4" step="0.01" value="0.15"><output id="growthValue">0.15</output><span class="control-help">Higher values exaggerate expansion and contraction from divergence.</span></label>
         <label>Time step <input id="dt" type="range" min="0.001" max="0.05" step="0.001" value="0.01"><output id="dtValue">0.010</output></label>
         <label>Color encoding<select id="colorMode">
           <option value="fixed">Fixed blue</option>

@@ -26,7 +26,7 @@ export class Simulation {
   makeItem() {
     const lifetime = this.randomBetween(this.lifetimeMin, this.lifetimeMax); const age = 0;
     const position = new THREE.Vector3(this.randomBetween(-bounds, bounds), this.randomBetween(-bounds, bounds), this.randomBetween(-bounds, bounds));
-    return { position, quaternion: new THREE.Quaternion(), size: baseSize, scale: new THREE.Vector3(1, 1, 1), age, lifetime, fadeInElapsed: 0, opacity: 0, fadingOut: false, fadeRemaining: 0, velocity: new THREE.Vector3(), curl: new THREE.Vector3(), divergence: 0, band: 2, path: [position.clone()] };
+    return { position, quaternion: new THREE.Quaternion(), size: baseSize, deformation: new THREE.Matrix3(), age, lifetime, fadeInElapsed: 0, opacity: 0, fadingOut: false, fadeRemaining: 0, velocity: new THREE.Vector3(), curl: new THREE.Vector3(), divergence: 0, band: 2, path: [position.clone()] };
   }
   velocityAt(position) { return this.field.velocity(position); }
   integrateEuler(position, dt) { position.addScaledVector(this.velocityAt(position), dt); }
@@ -47,6 +47,25 @@ export class Simulation {
       if (item.path.length > trailMaxPoints) item.path.shift();
     }
   }
+  updateDeformation(item, jacobian, dt) {
+    // Use the symmetric part of the velocity gradient so curl remains
+    // represented by the cube's quaternion while the symmetric part handles
+    // stretching and true off-axis shear.
+    const s00 = jacobian[0][0]; const s11 = jacobian[1][1]; const s22 = jacobian[2][2];
+    const s01 = (jacobian[0][1] + jacobian[1][0]) / 2;
+    const s02 = (jacobian[0][2] + jacobian[2][0]) / 2;
+    const s12 = (jacobian[1][2] + jacobian[2][1]) / 2;
+    const e = item.deformation.elements;
+    const f00 = e[0]; const f10 = e[1]; const f20 = e[2];
+    const f01 = e[3]; const f11 = e[4]; const f21 = e[5];
+    const f02 = e[6]; const f12 = e[7]; const f22 = e[8];
+    const k = this.deformationRate * dt;
+    item.deformation.set(
+      f00 + k * (s00 * f00 + s01 * f10 + s02 * f20), f01 + k * (s00 * f01 + s01 * f11 + s02 * f21), f02 + k * (s00 * f02 + s01 * f12 + s02 * f22),
+      f10 + k * (s01 * f00 + s11 * f10 + s12 * f20), f11 + k * (s01 * f01 + s11 * f11 + s12 * f21), f12 + k * (s01 * f02 + s11 * f12 + s12 * f22),
+      f20 + k * (s02 * f00 + s12 * f10 + s22 * f20), f21 + k * (s02 * f01 + s12 * f11 + s22 * f21), f22 + k * (s02 * f02 + s12 * f12 + s22 * f22)
+    );
+  }
   step(dt, realDt, mode, curlStrength, growthRate, deform = false) {
     for (const item of this.items) {
       if (!item.fadingOut) {
@@ -61,7 +80,7 @@ export class Simulation {
       const { curl, divergence, jacobian } = derivatives(this.field, item.position); item.velocity.copy(this.velocityAt(item.position)); item.curl.copy(curl); item.divergence = divergence;
       if (mode !== 'particles' && (mode === 'curl' || mode === 'divergence')) { const angularVelocity = curl.multiplyScalar(curlStrength * dt); const angle = angularVelocity.length(); if (angle > 1e-8) item.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(angularVelocity.normalize(), angle)); }
       if (mode === 'divergence') item.size *= Math.exp(growthRate * divergence * dt);
-      if (deform) { item.scale.x = THREE.MathUtils.clamp(item.scale.x * Math.exp(this.deformationRate * jacobian[0][0] * dt), .35, 3); item.scale.y = THREE.MathUtils.clamp(item.scale.y * Math.exp(this.deformationRate * jacobian[1][1] * dt), .35, 3); item.scale.z = THREE.MathUtils.clamp(item.scale.z * Math.exp(this.deformationRate * jacobian[2][2] * dt), .35, 3); }
+      if (deform) this.updateDeformation(item, jacobian, dt);
       if (item.fadingOut && item.fadeRemaining <= 0) Object.assign(item, this.makeItem()); else if (!item.fadingOut && (item.age >= item.lifetime || item.size > 1.2 || item.size < 0.01)) { item.fadingOut = true; item.fadeRemaining = this.fadeDuration; } else { this.applyBoundary(item); this.recordPath(item); }
     }
   }
