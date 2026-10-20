@@ -19,14 +19,13 @@ export class Simulation {
     this.seed = options.seed ?? 12345; this.random = mulberry32(this.seed); this.set(count, field);
   }
   setSeed(seed) { this.seed = Number.isFinite(seed) ? seed : 12345; this.random = mulberry32(this.seed); }
-  set(count, field) { this.field = field; this.items = Array.from({ length: count }, () => this.makeItem(true)); }
+  set(count, field) { this.field = field; this.items = Array.from({ length: count }, () => this.makeItem()); }
   randomBetween(min, max) { return min + (max - min) * this.random(); }
-  makeItem(initial = false) {
-    const lifetime = this.randomBetween(this.lifetimeMin, this.lifetimeMax); const age = -this.randomBetween(0, this.fadeDuration * 0.5);
+  makeItem() {
+    const lifetime = this.randomBetween(this.lifetimeMin, this.lifetimeMax); const age = 0;
     const position = new THREE.Vector3(this.randomBetween(-bounds, bounds), this.randomBetween(-bounds, bounds), this.randomBetween(-bounds, bounds));
-    return { position, quaternion: new THREE.Quaternion(), size: baseSize, scale: new THREE.Vector3(1, 1, 1), age, lifetime, opacity: this.opacityForAge(age, lifetime), fadingOut: false, fadeRemaining: 0, velocity: new THREE.Vector3(), curl: new THREE.Vector3(), divergence: 0, band: 2 };
+    return { position, quaternion: new THREE.Quaternion(), size: baseSize, scale: new THREE.Vector3(1, 1, 1), age, lifetime, fadeInElapsed: 0, opacity: 0, fadingOut: false, fadeRemaining: 0, velocity: new THREE.Vector3(), curl: new THREE.Vector3(), divergence: 0, band: 2 };
   }
-  opacityForAge(age, lifetime) { return Math.max(0, Math.min(1, age / this.fadeDuration, (lifetime - age) / this.fadeDuration)); }
   velocityAt(position) { return this.field.velocity(position); }
   integrateEuler(position, dt) { position.addScaledVector(this.velocityAt(position), dt); }
   integrateRk4(position, dt) {
@@ -39,10 +38,16 @@ export class Simulation {
     if (this.boundaryMode === 'reflect') { for (const axis of ['x', 'y', 'z']) item.position[axis] = THREE.MathUtils.clamp(item.position[axis], -limit, limit); return; }
     if (this.boundaryMode === 'respawn') Object.assign(item, this.makeItem()); else if (!item.fadingOut) { item.fadingOut = true; item.fadeRemaining = this.fadeDuration; }
   }
-  step(dt, mode, curlStrength, growthRate, deform = false) {
+  step(dt, realDt, mode, curlStrength, growthRate, deform = false) {
     for (const item of this.items) {
-      if (!item.fadingOut) { item.age += dt; item.opacity = this.opacityForAge(item.age, item.lifetime); } else { item.fadeRemaining -= dt; item.opacity = Math.max(0, item.fadeRemaining / this.fadeDuration); }
-      if (!item.fadingOut && item.age < 0) continue;
+      if (!item.fadingOut) {
+        item.age += dt;
+        item.fadeInElapsed = Math.min(this.fadeDuration, item.fadeInElapsed + realDt);
+        item.opacity = this.fadeDuration > 0 ? item.fadeInElapsed / this.fadeDuration : 1;
+      } else {
+        item.fadeRemaining -= realDt;
+        item.opacity = Math.max(0, item.fadeRemaining / this.fadeDuration);
+      }
       if (this.integrator === 'rk4') this.integrateRk4(item.position, dt); else this.integrateEuler(item.position, dt);
       const { curl, divergence, jacobian } = derivatives(this.field, item.position); item.velocity.copy(this.velocityAt(item.position)); item.curl.copy(curl); item.divergence = divergence;
       if (mode !== 'particles' && (mode === 'curl' || mode === 'divergence')) { const angularVelocity = curl.multiplyScalar(curlStrength * dt); const angle = angularVelocity.length(); if (angle > 1e-8) item.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(angularVelocity.normalize(), angle)); }

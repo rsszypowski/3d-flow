@@ -49,8 +49,8 @@ function rebuild() {
   simulation.setSeed(+$('seed').value);
   simulation.lifetimeMin = Math.min(+$('lifetimeMin').value, +$('lifetimeMax').value - 1);
   simulation.lifetimeMax = Math.max(+$('lifetimeMax').value, simulation.lifetimeMin + 1);
-  simulation.set(+$('count').value, fields[fieldSelect.value]);
   simulation.fadeDuration = +$('fadeDuration').value;
+  simulation.set(+$('count').value, fields[fieldSelect.value]);
   simulation.integrator = $('integrator').value;
   simulation.boundaryMode = $('boundary').value;
   for (const oldMesh of meshes) { scene.remove(oldMesh); oldMesh.geometry.dispose(); }
@@ -99,6 +99,6 @@ function bandFor(item) {
   item.band = target;
   return target;
 }
-function animate(now) { requestAnimationFrame(animate); const dt = Math.min((now - last) / 1000, .05); last = now; if (running) simulation.step(Math.min(dt, +$('dt').value), $('mode').value, +$('curlStrength').value, +$('growthRate').value, $('deform').checked); const groupIndices = Array(palette.length).fill(0); for (let i = 0; i < simulation.items.length; i++) { const item = simulation.items[i]; const group = bandFor(item); const localIndex = groupIndices[group]++; matrix.compose(item.position, item.quaternion, new THREE.Vector3(item.size * item.scale.x, item.size * item.scale.y, item.size * item.scale.z)); meshes[group].setMatrixAt(localIndex, matrix); alphaAttributes[group].setX(localIndex, item.opacity * +$('alpha').value); } for (let group = 0; group < palette.length; group++) { meshes[group].count = groupIndices[group]; meshes[group].instanceMatrix.needsUpdate = true; alphaAttributes[group].needsUpdate = true; } controls.update(); renderer.render(scene, camera); }
+function animate(now) { requestAnimationFrame(animate); const realDt = Math.min((now - last) / 1000, .05); last = now; if (running) simulation.step(Math.min(realDt, +$('dt').value), realDt, $('mode').value, +$('curlStrength').value, +$('growthRate').value, $('deform').checked); const groupIndices = Array(palette.length).fill(0); for (let i = 0; i < simulation.items.length; i++) { const item = simulation.items[i]; const group = bandFor(item); const localIndex = groupIndices[group]++; matrix.compose(item.position, item.quaternion, new THREE.Vector3(item.size * item.scale.x, item.size * item.scale.y, item.size * item.scale.z)); meshes[group].setMatrixAt(localIndex, matrix); alphaAttributes[group].setX(localIndex, item.opacity * +$('alpha').value); } for (let group = 0; group < palette.length; group++) { meshes[group].count = groupIndices[group]; meshes[group].instanceMatrix.needsUpdate = true; alphaAttributes[group].needsUpdate = true; } controls.update(); renderer.render(scene, camera); }
 requestAnimationFrame(animate);
 addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
