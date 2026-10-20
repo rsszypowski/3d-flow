@@ -3,6 +3,8 @@ import { derivatives } from './fields.js';
 
 const bounds = 5;
 const baseSize = 0.08;
+export const trailMaxPoints = 120;
+const trailSpacing = 0.12;
 
 function mulberry32(seed) {
   return function random() {
@@ -24,7 +26,7 @@ export class Simulation {
   makeItem() {
     const lifetime = this.randomBetween(this.lifetimeMin, this.lifetimeMax); const age = 0;
     const position = new THREE.Vector3(this.randomBetween(-bounds, bounds), this.randomBetween(-bounds, bounds), this.randomBetween(-bounds, bounds));
-    return { position, quaternion: new THREE.Quaternion(), size: baseSize, scale: new THREE.Vector3(1, 1, 1), age, lifetime, fadeInElapsed: 0, opacity: 0, fadingOut: false, fadeRemaining: 0, velocity: new THREE.Vector3(), curl: new THREE.Vector3(), divergence: 0, band: 2 };
+    return { position, quaternion: new THREE.Quaternion(), size: baseSize, scale: new THREE.Vector3(1, 1, 1), age, lifetime, fadeInElapsed: 0, opacity: 0, fadingOut: false, fadeRemaining: 0, velocity: new THREE.Vector3(), curl: new THREE.Vector3(), divergence: 0, band: 2, path: [position.clone()] };
   }
   velocityAt(position) { return this.field.velocity(position); }
   integrateEuler(position, dt) { position.addScaledVector(this.velocityAt(position), dt); }
@@ -34,9 +36,16 @@ export class Simulation {
   }
   applyBoundary(item) {
     const limit = bounds * 1.7; const inside = ['x', 'y', 'z'].every(axis => item.position[axis] >= -limit && item.position[axis] <= limit); if (inside) return;
-    if (this.boundaryMode === 'wrap') { for (const axis of ['x', 'y', 'z']) { if (item.position[axis] > limit) item.position[axis] = -limit; if (item.position[axis] < -limit) item.position[axis] = limit; } return; }
+    if (this.boundaryMode === 'wrap') { for (const axis of ['x', 'y', 'z']) { if (item.position[axis] > limit) item.position[axis] = -limit; if (item.position[axis] < -limit) item.position[axis] = limit; } item.path = [item.position.clone()]; return; }
     if (this.boundaryMode === 'reflect') { for (const axis of ['x', 'y', 'z']) item.position[axis] = THREE.MathUtils.clamp(item.position[axis], -limit, limit); return; }
     if (this.boundaryMode === 'respawn') Object.assign(item, this.makeItem()); else if (!item.fadingOut) { item.fadingOut = true; item.fadeRemaining = this.fadeDuration; }
+  }
+  recordPath(item) {
+    const lastPoint = item.path[item.path.length - 1];
+    if (item.position.distanceTo(lastPoint) >= trailSpacing) {
+      item.path.push(item.position.clone());
+      if (item.path.length > trailMaxPoints) item.path.shift();
+    }
   }
   step(dt, realDt, mode, curlStrength, growthRate, deform = false) {
     for (const item of this.items) {
@@ -53,7 +62,7 @@ export class Simulation {
       if (mode !== 'particles' && (mode === 'curl' || mode === 'divergence')) { const angularVelocity = curl.multiplyScalar(curlStrength * dt); const angle = angularVelocity.length(); if (angle > 1e-8) item.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(angularVelocity.normalize(), angle)); }
       if (mode === 'divergence') item.size *= Math.exp(growthRate * divergence * dt);
       if (deform) { item.scale.x = THREE.MathUtils.clamp(item.scale.x * Math.exp(this.deformationRate * jacobian[0][0] * dt), .35, 3); item.scale.y = THREE.MathUtils.clamp(item.scale.y * Math.exp(this.deformationRate * jacobian[1][1] * dt), .35, 3); item.scale.z = THREE.MathUtils.clamp(item.scale.z * Math.exp(this.deformationRate * jacobian[2][2] * dt), .35, 3); }
-      if (item.fadingOut && item.fadeRemaining <= 0) Object.assign(item, this.makeItem()); else if (!item.fadingOut && (item.age >= item.lifetime || item.size > 1.2 || item.size < 0.01)) { item.fadingOut = true; item.fadeRemaining = this.fadeDuration; } else this.applyBoundary(item);
+      if (item.fadingOut && item.fadeRemaining <= 0) Object.assign(item, this.makeItem()); else if (!item.fadingOut && (item.age >= item.lifetime || item.size > 1.2 || item.size < 0.01)) { item.fadingOut = true; item.fadeRemaining = this.fadeDuration; } else { this.applyBoundary(item); this.recordPath(item); }
     }
   }
 }

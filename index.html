@@ -38,6 +38,8 @@
         <label class="check"><input id="deform" type="checkbox"> Deform boxes with field</label>
         <label>Seed <input id="seed" type="number" step="1" value="12345"></label>
         <label class="check"><input id="vectors" type="checkbox"> Show field vectors</label>
+        <label class="check"><input id="paths" type="checkbox"> Show streamline history</label>
+        <label>Trail length <input id="trailLength" type="range" min="8" max="120" step="4" value="80"><output id="trailLengthValue">80</output><span class="control-help">Maximum 120 sampled points per object.</span></label>
         <div class="camera-buttons"><button data-camera="top">Top</button><button data-camera="front">Front</button><button data-camera="side">Side</button><button data-camera="iso">Iso</button></div>
         <button id="share">Copy share link</button>
         <section id="fieldInfo"></section>
