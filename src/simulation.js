@@ -19,12 +19,12 @@ export class Simulation {
     this.seed = options.seed ?? 12345; this.random = mulberry32(this.seed); this.set(count, field);
   }
   setSeed(seed) { this.seed = Number.isFinite(seed) ? seed : 12345; this.random = mulberry32(this.seed); }
-  set(count, field) { this.field = field; this.items = Array.from({ length: count }, () => this.makeItem()); }
+  set(count, field) { this.field = field; this.items = Array.from({ length: count }, () => this.makeItem(true)); }
   randomBetween(min, max) { return min + (max - min) * this.random(); }
-  makeItem() {
-    const lifetime = this.randomBetween(this.lifetimeMin, this.lifetimeMax); const age = this.randomBetween(0, lifetime);
+  makeItem(initial = false) {
+    const lifetime = this.randomBetween(this.lifetimeMin, this.lifetimeMax); const age = -this.randomBetween(0, this.fadeDuration * 0.5);
     const position = new THREE.Vector3(this.randomBetween(-bounds, bounds), this.randomBetween(-bounds, bounds), this.randomBetween(-bounds, bounds));
-    return { position, quaternion: new THREE.Quaternion(), size: baseSize, scale: new THREE.Vector3(1, 1, 1), age, lifetime, opacity: this.opacityForAge(age, lifetime), fadingOut: false, fadeRemaining: 0, velocity: new THREE.Vector3(), curl: new THREE.Vector3(), divergence: 0, band: 2, path: [position.clone()] };
+    return { position, quaternion: new THREE.Quaternion(), size: baseSize, scale: new THREE.Vector3(1, 1, 1), age, lifetime, opacity: this.opacityForAge(age, lifetime), fadingOut: false, fadeRemaining: 0, velocity: new THREE.Vector3(), curl: new THREE.Vector3(), divergence: 0, band: 2 };
   }
   opacityForAge(age, lifetime) { return Math.max(0, Math.min(1, age / this.fadeDuration, (lifetime - age) / this.fadeDuration)); }
   velocityAt(position) { return this.field.velocity(position); }
@@ -42,8 +42,8 @@ export class Simulation {
   step(dt, mode, curlStrength, growthRate, deform = false) {
     for (const item of this.items) {
       if (!item.fadingOut) { item.age += dt; item.opacity = this.opacityForAge(item.age, item.lifetime); } else { item.fadeRemaining -= dt; item.opacity = Math.max(0, item.fadeRemaining / this.fadeDuration); }
+      if (!item.fadingOut && item.age < 0) continue;
       if (this.integrator === 'rk4') this.integrateRk4(item.position, dt); else this.integrateEuler(item.position, dt);
-      item.path.push(item.position.clone()); if (item.path.length > 24) item.path.shift();
       const { curl, divergence, jacobian } = derivatives(this.field, item.position); item.velocity.copy(this.velocityAt(item.position)); item.curl.copy(curl); item.divergence = divergence;
       if (mode !== 'particles' && (mode === 'curl' || mode === 'divergence')) { const angularVelocity = curl.multiplyScalar(curlStrength * dt); const angle = angularVelocity.length(); if (angle > 1e-8) item.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(angularVelocity.normalize(), angle)); }
       if (mode === 'divergence') item.size *= Math.exp(growthRate * divergence * dt);

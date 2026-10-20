@@ -31,14 +31,13 @@
           <option value="curl">Curl magnitude</option>
           <option value="divergence">Divergence</option>
         </select></label>
-        <label>Color scale <input id="colorScale" type="range" min="0.5" max="3" step="0.05" value="1"><output id="colorScaleValue">1.00</output></label>
+        <label>Color scale <input id="colorScale" type="range" min="0.5" max="3" step="0.05" value="1"><output id="colorScaleValue">1.00</output><span class="control-help">Lower values reach warm colors sooner; higher values reserve them for stronger values.</span></label>
         <label>Band hysteresis <input id="hysteresis" type="range" min="0" max="0.5" step="0.01" value="0.05"><output id="hysteresisValue">0.05</output></label>
         <label>Integrator<select id="integrator"><option value="rk4">RK4</option><option value="euler">Euler</option></select></label>
         <label>Boundary<select id="boundary"><option value="fade">Fade out</option><option value="wrap">Wrap around</option><option value="reflect">Reflect</option><option value="respawn">Immediate respawn</option></select></label>
         <label class="check"><input id="deform" type="checkbox"> Deform boxes with field</label>
         <label>Seed <input id="seed" type="number" step="1" value="12345"></label>
         <label class="check"><input id="vectors" type="checkbox"> Show field vectors</label>
-        <label class="check"><input id="paths" type="checkbox"> Show streamline history</label>
         <div class="camera-buttons"><button data-camera="top">Top</button><button data-camera="front">Front</button><button data-camera="side">Side</button><button data-camera="iso">Iso</button></div>
         <button id="share">Copy share link</button>
         <section id="fieldInfo"></section>
