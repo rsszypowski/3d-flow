@@ -4,7 +4,7 @@ An exploratory 3D vector-field visualizer for classroom demonstrations.
 
 ## Current scope
 
-- Four predefined, time-independent 3D fields: uniform flow, solid-body vortex, source/sink, and saddle.
+- Predefined, time-independent 3D fields including uniform flow, solid-body and potential vortices, pure shear, source/sink, saddle, and cellular flow.
 - CPU integration for a modest number of objects.
 - Particle, curl/orientation, and divergence/growth modes.
 - Orbit, pan, and zoom camera controls.
